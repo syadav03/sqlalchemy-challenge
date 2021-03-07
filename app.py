@@ -39,10 +39,11 @@ def  welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/temp/yyy-mm-dd/yyy-mm-dd"
+        f"/api/v1.0/&lt;start&gt;<br>"
+        f"/api/v1.0/&lt;start&gt;/&lt;end&gt;<br>"
     )
 
-@app.route("/api/v1.0/precipitation")
+@app.route("/api/v1.0/preciptation")
 def precipitation_route():
      # Create our session (link) from Python to the DB
     
@@ -90,7 +91,19 @@ def tobs():
     return jsonify (temps)
 
 
+@app.route("/api/v1.0/<start>")
+@app.route("/api/v1.0/<start>/<end>")
+def stats(start, end = None):
+    if not end:
+        results = session.query(measurement.date, func.min(measurement.tobs),func.avg(measurement.tobs),func.max(measurement.tobs)).\
+            filter(measurement.date >= start).all()
+    else:
+        results = session.query(measurement.date, func.min(measurement.tobs),func.avg(measurement.tobs),func.max(measurement.tobs)).\
+            filter(measurement.date >= start).filter(measurement.date < end).all()
+    
+    final_results = list(np.ravel(results))
 
+    return jsonify(temps = final_results)
 
 
 
